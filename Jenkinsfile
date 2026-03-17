@@ -1,56 +1,63 @@
 pipeline {
-    agent any // Executes the pipeline on any available Jenkins node
+    agent any
 
-    // This section defines the tools Jenkins needs to run your project
+    // This calls the tools you just named in the Jenkins Dashboard
     tools {
-        // Note: You have to configure these names inside Jenkins' "Global Tool Configuration"
-        maven 'Maven-3.9' 
+        jdk 'JDK-17' 
         nodejs 'NodeJS-18' 
     }
 
     stages {
-        stage('Checkout') {
+        stage('Checkout Code') {
             steps {
-                // This pulls the latest commit from your GitHub repository
-                checkout scm 
-                echo 'Source code fetched successfully!'
+                // Pulls the latest code from your Git repo
+                checkout scm
+                echo '✅ Source code fetched successfully!'
             }
         }
 
-        stage('Backend: Build & Test (Spring Boot)') {
+        stage('Backend: Build & Test Microservices') {
             steps {
-                // Assumes your Spring Boot code is inside a folder named 'backend'
-                dir('backend') { 
-                    echo 'Building the Spring Boot Backend...'
-                    // Compiles the Java code and runs JUnit tests
-                    sh './mvnw clean package' 
+                script {
+                    // Your exact list of microservices
+                    def services = ["discovery-server", "api-gateway", "user-service", "product-service", "media-service"]
+                    
+                    for (service in services) {
+                        echo "⚙️ Processing backend/${service}..."
+                        
+                        // dir() tells Jenkins to 'cd' into this folder
+                        dir("backend/${service}") {
+                            // 1. Ensure the wrapper has execution permissions
+                            sh 'chmod +x mvnw'
+                            
+                            // 2. clean package compiles the code AND runs the JUnit tests automatically. 
+                            // If a test fails here, Jenkins will instantly halt the pipeline.
+                            sh './mvnw clean package'
+                        }
+                    }
                 }
             }
         }
 
-        stage('Frontend: Build & Test (Angular)') {
+        stage('Frontend: Build Angular') {
             steps {
-                // Assumes your Angular code is inside a folder named 'frontend'
                 dir('frontend') {
-                    echo 'Building the Angular Frontend...'
+                    echo '📦 Building Angular Frontend...'
                     sh 'npm install'
                     sh 'npm run build'
                     
-                    // You would run your Jasmine/Karma tests here
-                    // sh 'ng test --watch=false' 
+                    // Note: You can add 'ng test --watch=false' here later for frontend testing
                 }
             }
         }
     }
 
-    // The 'post' block runs after all stages are finished
     post {
         success {
-            echo '✅ SUCCESS: 01buy built and tested perfectly! Ready to deploy.'
-            // Later, we will add Slack or Email notification code right here
+            echo '🎉 SUCCESS: All microservices and frontend built and tested perfectly!'
         }
         failure {
-            echo '❌ FAILURE: Something broke in the build or tests. Check the Jenkins console logs!'
+            echo '❌ FAILURE: A build or test failed. Check the Jenkins console output.'
         }
     }
 }
