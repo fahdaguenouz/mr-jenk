@@ -24,8 +24,10 @@ eureka:
     service-url:
       defaultZone: http://localhost:8761/eureka/
 
+
+
 media-service:
-  url: http://localhost:8083/api/media/images/
+  base-url: http://localhost:9090/api/media/images/
 
 # --- CENTRAL SWAGGER HUB CONFIGURATION ---
 springdoc:

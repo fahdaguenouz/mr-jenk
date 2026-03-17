@@ -22,7 +22,7 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ProductEventProducer productEventProducer;
 
-    @Value("${media-service.base-url:http://localhost:8083/api/media/images/}")
+    @Value("${media-service.base-url:http://localhost:9090/api/media/images/}")
     private String mediaServiceBaseUrl;
 
     public ProductResponse createProduct(ProductRequest request, String sellerId) {
