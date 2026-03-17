@@ -1,0 +1,243 @@
+<div class="profile-page">
+  <!-- Header Background -->
+  <div class="profile-header-bg">
+    <div class="header-pattern"></div>
+  </div>
+
+  <div class="profile-container">
+    <!-- Main Profile Card -->
+    <div class="profile-main">
+      <mat-card class="profile-card">
+        <div class="avatar-section">
+          <div class="avatar-wrapper">
+            <img 
+              [src]="user?.avatarMediaId || '/images/default-avatar.svg'" 
+              [alt]="user?.username"
+              class="avatar-img">
+            <button 
+              mat-mini-fab 
+              color="primary" 
+              class="edit-avatar-btn"
+              (click)="openUpdateDialog()"
+              matTooltip="Change photo">
+              <mat-icon>photo_camera</mat-icon>
+            </button>
+          </div>
+          
+          <div class="user-identity">
+            <h1 class="user-name">{{ user?.firstName || '' }} {{ user?.lastName || '' }}</h1>
+            <p class="username">@{{ user?.username }}</p>
+            
+            <div class="role-badge" [class]="user?.role?.toLowerCase()">
+              <mat-icon>{{ user?.role === 'SELLER' ? 'store' : 'shopping_bag' }}</mat-icon>
+              {{ user?.role }}
+            </div>
+          </div>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <div class="info-section">
+          <h3 class="section-title">Contact Information</h3>
+          
+          <div class="info-grid">
+            <div class="info-item">
+              <div class="info-icon">
+                <mat-icon>email</mat-icon>
+              </div>
+              <div class="info-content">
+                <label>Email Address</label>
+                <p>{{ user?.email || 'Not provided' }}</p>
+              </div>
+            </div>
+
+            <div class="info-item">
+              <div class="info-icon">
+                <mat-icon>badge</mat-icon>
+              </div>
+              <div class="info-content">
+                <label>Full Name</label>
+                <p>{{ (user?.firstName || 'Not set') + ' ' + (user?.lastName || '') }}</p>
+              </div>
+            </div>
+
+            <div class="info-item">
+              <div class="info-icon">
+                <mat-icon>calendar_today</mat-icon>
+              </div>
+              <div class="info-content">
+                <label>Member Since</label>
+                <p>{{ memberSince }}</p>
+              </div>
+            </div>
+
+            <div class="info-item" *ngIf="user?.role === 'SELLER'">
+              <div class="info-icon seller">
+                <mat-icon>inventory_2</mat-icon>
+              </div>
+              <div class="info-content">
+                <label>Products Listed</label>
+                <p class="highlight">{{ sellerStats?.productCount || 0 }} items</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="profile-actions">
+          <button 
+            mat-raised-button 
+            color="primary" 
+            class="edit-profile-btn"
+            (click)="openUpdateDialog()">
+            <mat-icon>edit</mat-icon>
+            Edit Profile
+          </button>
+        </div>
+      </mat-card>
+
+      <!-- Quick Stats (Seller Only) -->
+      <div class="quick-stats" *ngIf="user?.role === 'SELLER' && sellerStats">
+        <div class="stat-card">
+          <div class="stat-icon products">
+            <mat-icon>inventory_2</mat-icon>
+          </div>
+          <div class="stat-details">
+            <span class="stat-value">{{ sellerStats.productCount || 0 }}</span>
+            <span class="stat-label">Products</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon stock">
+            <mat-icon>warehouse</mat-icon>
+          </div>
+          <div class="stat-details">
+            <span class="stat-value">{{ sellerStats.totalStock || 0 }}</span>
+            <span class="stat-label">In Stock</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon value">
+            <mat-icon>attach_money</mat-icon>
+          </div>
+          <div class="stat-details">
+            <span class="stat-value">{{ sellerStats.totalValue || 0 | currency:'USD':'symbol':'1.0-0' }}</span>
+            <span class="stat-label">Inventory Value</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Seller Products Section -->
+    <div class="seller-products-section" *ngIf="user?.role === 'SELLER'">
+      <div class="section-header">
+        <div class="header-title">
+          <mat-icon>storefront</mat-icon>
+          <h2>My Store</h2>
+        </div>
+        <button 
+          mat-stroked-button 
+          color="primary"
+          routerLink="/add-product">
+          <mat-icon>add</mat-icon>
+          Add Product
+        </button>
+      </div>
+
+      <!-- Empty State -->
+      <div class="products-empty" *ngIf="!myProducts || myProducts.length === 0">
+        <div class="empty-icon">
+          <mat-icon>inventory_2</mat-icon>
+        </div>
+        <h3>Your store is empty</h3>
+        <p>Start selling by adding your first product</p>
+        <button 
+          mat-raised-button 
+          color="primary"
+          routerLink="/add-product">
+          <mat-icon>add_circle</mat-icon>
+          Create First Product
+        </button>
+      </div>
+
+      <!-- Products Grid -->
+      <div class="products-grid" *ngIf="myProducts && myProducts.length > 0">
+        <mat-card 
+          class="product-mini-card" 
+          *ngFor="let product of myProducts.slice(0, 6)"
+          [routerLink]="['/products', product.id]">
+          
+          <div class="product-image">
+            <img 
+              [src]="product.mediaIds[0] || '/images/product.jpeg'" 
+              [alt]="product.name">
+            <div class="stock-overlay" [class.low]="product.stockQuantity < 5">
+              {{ product.stockQuantity }} left
+            </div>
+          </div>
+
+          <mat-card-content>
+            <h4 class="product-name">{{ product.name }}</h4>
+            <div class="product-meta">
+              <span class="price">{{ product.price | currency }}</span>
+              <span class="category">{{ product.category }}</span>
+            </div>
+          </mat-card-content>
+
+          <mat-card-actions>
+            <button 
+              mat-icon-button 
+              class="action-btn edit"
+              [routerLink]="['/add-product', product.id]"
+              (click)="$event.stopPropagation()">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button 
+              mat-icon-button 
+              class="action-btn delete"
+              (click)="openDeleteDialog(product); $event.stopPropagation()">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </mat-card-actions>
+        </mat-card>
+
+        <!-- View All Card -->
+        <mat-card 
+          class="product-mini-card view-all"
+          routerLink="/seller-dashboard"
+          *ngIf="myProducts.length > 6">
+          <div class="view-all-content">
+            <mat-icon>arrow_forward</mat-icon>
+            <span>View All {{ myProducts.length }} Products</span>
+          </div>
+        </mat-card>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Dialog -->
+<ng-template #deleteDialog let-data>
+  <div class="delete-dialog">
+    <div class="dialog-icon">
+      <mat-icon>delete_forever</mat-icon>
+    </div>
+    <h2>Delete Product?</h2>
+    <p>Remove <strong>"{{data.product.name}}"</strong> from your store?</p>
+    <p class="warning-text">This action cannot be undone.</p>
+    <div class="dialog-actions">
+      <button mat-stroked-button (click)="closeDeleteDialog()" class="cancel-btn">
+        Cancel
+      </button>
+      <button 
+        mat-raised-button 
+        color="warn" 
+        (click)="confirmDelete(data.product.id)"
+        class="delete-btn">
+        <mat-icon>delete</mat-icon>
+        Delete
+      </button>
+    </div>
+  </div>
+</ng-template>

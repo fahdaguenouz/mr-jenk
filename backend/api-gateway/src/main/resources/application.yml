@@ -1,0 +1,80 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "http://localhost:4200"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+            allowCredentials: true
+      routes:
+        # ==========================================
+        # 1. SPECIFIC ROUTES (SWAGGER DOCS) 
+        # (These must come first to avoid the wildcards below)
+        # ==========================================
+        - id: swagger-ui
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/swagger-ui.html, /swagger-ui/**, /v3/api-docs/swagger-config
+
+        - id: user-service-docs
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/users/v3/api-docs/**
+          filters:
+            - StripPrefix=1
+
+        - id: product-service-docs
+          uri: lb://PRODUCT-SERVICE
+          predicates:
+            - Path=/products/v3/api-docs/**
+          filters:
+            - StripPrefix=1
+
+        - id: media-service-docs
+          uri: lb://MEDIA-SERVICE
+          predicates:
+            - Path=/api/media/v3/api-docs/**
+          filters:
+            - StripPrefix=2
+
+        # ==========================================
+        # 2. BROAD WILDCARD ROUTES (ACTUAL API)
+        # ==========================================
+        - id: user-service
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/auth/**,/users/**
+          filters:
+            - AuthenticationFilter
+
+        - id: product-service
+          uri: lb://PRODUCT-SERVICE
+          predicates:
+            - Path=/products/**,/categories/**
+          filters:
+            - AuthenticationFilter
+
+        - id: media-service
+          uri: lb://MEDIA-SERVICE
+          predicates:
+            - Path=/api/media/**
+          filters:
+            - AuthenticationFilter
+            
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+jwt:
+  secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970

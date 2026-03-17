@@ -1,0 +1,13 @@
+package com.buy01.product_service.repository;
+
+import com.buy01.product_service.models.Product;
+import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface ProductRepository extends MongoRepository<Product, String> {
+    // Custom method to let sellers view their own inventory
+    List<Product> findBySellerId(String sellerId);
+}

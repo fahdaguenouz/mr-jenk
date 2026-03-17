@@ -1,0 +1,177 @@
+.dialog-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  padding: 24px 24px 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--deep-slate);
+  background: white;
+
+  mat-icon {
+    color: var(--cold-red-primary);
+  }
+}
+
+mat-dialog-content {
+  padding: 24px !important;
+  background: white !important;
+}
+
+.dialog-avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 24px;
+  background: white;
+
+  .avatar-wrapper {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    overflow: hidden;
+    cursor: pointer;
+    border: 4px solid white;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    background: #f1f5f9;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: filter 0.3s;
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(198, 40, 40, 0.9);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      opacity: 0;
+      transition: opacity 0.3s;
+
+      mat-icon {
+        font-size: 28px;
+        width: 28px;
+        height: 28px;
+        margin-bottom: 4px;
+      }
+
+      span {
+        font-size: 0.75rem;
+        font-weight: 500;
+      }
+    }
+
+    &:hover .overlay {
+      opacity: 1;
+    }
+  }
+
+  .avatar-hint {
+    font-size: 0.8rem;
+    color: var(--slate-cool);
+    margin-top: 12px;
+    background: white;
+  }
+}
+
+.update-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: white;
+
+  .full-width {
+    width: 100%;
+
+    ::ng-deep {
+      .mat-mdc-form-field-flex {
+        background: #f8fafc !important;
+      }
+      
+      .mdc-notched-outline__leading,
+      .mdc-notched-outline__notch,
+      .mdc-notched-outline__trailing {
+        border-color: rgba(100, 116, 139, 0.2) !important;
+      }
+      
+      &.mat-focused {
+        .mdc-notched-outline__leading,
+        .mdc-notched-outline__notch,
+        .mdc-notched-outline__trailing {
+          border-color: var(--cold-red-primary) !important;
+        }
+      }
+    }
+  }
+}
+
+mat-dialog-actions {
+  padding: 0 24px 24px !important;
+  gap: 12px;
+  background: white !important;
+  border-top: 1px solid rgba(100, 116, 139, 0.1);
+  margin-top: 0 !important;
+  padding-top: 16px !important;
+
+  .cancel-btn {
+    border-radius: 10px;
+    color: var(--slate-cool);
+    border: 1px solid rgba(100, 116, 139, 0.3);
+    padding: 10px 24px;
+    font-weight: 600;
+    
+    &:hover {
+      background: rgba(100, 116, 139, 0.08);
+    }
+  }
+
+  .save-btn {
+    background: linear-gradient(135deg, var(--cold-red-primary) 0%, var(--cold-red-dark) 100%) !important;
+    color: white !important;
+    border-radius: 10px;
+    padding: 10px 28px;
+    font-weight: 600;
+    box-shadow: 0 4px 16px rgba(198, 40, 40, 0.3);
+
+    &:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(198, 40, 40, 0.4);
+    }
+
+    .spin-icon {
+      animation: spin 1s linear infinite;
+      margin-right: 8px;
+    }
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+::ng-deep {
+  .profile-dialog-panel {
+    .mat-mdc-dialog-container {
+      background: white !important;
+      border-radius: 20px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+    }
+    
+    .mat-mdc-dialog-surface {
+      background: white !important;
+    }
+    
+    .mdc-dialog__content {
+      padding: 24px !important;
+    }
+  }
+}

@@ -1,0 +1,44 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: user-service
+  data:
+    mongodb:
+      uri: mongodb://admin:adminpassword@localhost:27017/user_db?authSource=admin
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+  mvc:
+    throw-exception-if-no-handler-found: true
+
+jwt:
+  secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+  expiration: 86400000
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+media-service:
+  url: http://localhost:8083/api/media/images/
+
+# --- CENTRAL SWAGGER HUB CONFIGURATION ---
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    disable-swagger-default-url: true 
+    urls-primary-name: "User Service" 
+    urls:
+      - name: "User Service"
+        url: http://localhost:8080/users/v3/api-docs
+      - name: "Product Service"
+        url: http://localhost:8080/products/v3/api-docs
+      - name: "Media Service"
+        url: http://localhost:8080/api/media/v3/api-docs

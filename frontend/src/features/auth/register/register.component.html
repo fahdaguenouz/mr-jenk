@@ -1,0 +1,164 @@
+<div class="auth-page">
+  <div class="register-container glass-card animate-slide-up">
+    <!-- Brand Section -->
+    <div class="brand-section">
+      <div class="logo-icon">
+        <mat-icon>shopping_bag</mat-icon>
+      </div>
+      <h1 class="brand-title">Buy 01</h1>
+      <p class="brand-tagline">Create your account</p>
+    </div>
+
+    <mat-card class="register-card">
+      <mat-card-header>
+        <mat-card-title>Join Us</mat-card-title>
+        <mat-card-subtitle>Start your journey as a buyer or seller</mat-card-subtitle>
+      </mat-card-header>
+
+      <form [formGroup]="registerForm" (ngSubmit)="onRegister()">
+        <mat-card-content>
+          <!-- Name Row -->
+          <div class="name-row">
+            <mat-form-field appearance="outline" class="half-width">
+              <mat-label>First Name</mat-label>
+              <mat-icon matPrefix class="field-icon">badge</mat-icon>
+              <input matInput formControlName="firstName" placeholder="John">
+              <mat-error *ngIf="registerForm.get('firstName')?.hasError('required')">
+                <mat-icon class="error-icon">error_outline</mat-icon>
+                First name required
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="half-width">
+              <mat-label>Last Name</mat-label>
+              <mat-icon matPrefix class="field-icon">badge</mat-icon>
+              <input matInput formControlName="lastName" placeholder="Doe">
+              <mat-error *ngIf="registerForm.get('lastName')?.hasError('required')">
+                <mat-icon class="error-icon">error_outline</mat-icon>
+                Last name required
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- Username -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Username</mat-label>
+            <mat-icon matPrefix class="field-icon">person_outline</mat-icon>
+            <input matInput formControlName="username" placeholder="johndoe123" autocomplete="username">
+            <mat-error *ngIf="registerForm.get('username')?.hasError('required')">
+              <mat-icon class="error-icon">error_outline</mat-icon>
+              Username is required
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Email -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Email Address</mat-label>
+            <mat-icon matPrefix class="field-icon">email</mat-icon>
+            <input matInput formControlName="email" type="email" placeholder="john@example.com" autocomplete="email">
+            <mat-error *ngIf="registerForm.get('email')?.hasError('required')">
+              <mat-icon class="error-icon">error_outline</mat-icon>
+              Email is required
+            </mat-error>
+            <mat-error *ngIf="registerForm.get('email')?.hasError('email')">
+              <mat-icon class="error-icon">error_outline</mat-icon>
+              Please enter a valid email
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Role Selection - Visual Cards -->
+          <div class="role-section">
+            <label class="section-label">Account Type</label>
+            <div class="role-cards">
+              <div 
+                class="role-card" 
+                [class.selected]="registerForm.get('role')?.value === 'CLIENT'"
+                (click)="registerForm.patchValue({role: 'CLIENT'})">
+                <div class="role-icon-wrapper client">
+                  <mat-icon>shopping_cart</mat-icon>
+                </div>
+                <div class="role-info">
+                  <span class="role-title">Client</span>
+                  <span class="role-desc">Browse & Buy</span>
+                </div>
+                <div class="check-indicator" *ngIf="registerForm.get('role')?.value === 'CLIENT'">
+                  <mat-icon>check_circle</mat-icon>
+                </div>
+              </div>
+
+              <div 
+                class="role-card" 
+                [class.selected]="registerForm.get('role')?.value === 'SELLER'"
+                (click)="registerForm.patchValue({role: 'SELLER'})">
+                <div class="role-icon-wrapper seller">
+                  <mat-icon>store</mat-icon>
+                </div>
+                <div class="role-info">
+                  <span class="role-title">Seller</span>
+                  <span class="role-desc">Manage Products</span>
+                </div>
+                <div class="check-indicator" *ngIf="registerForm.get('role')?.value === 'SELLER'">
+                  <mat-icon>check_circle</mat-icon>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Password -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Password</mat-label>
+            <mat-icon matPrefix class="field-icon">lock_outline</mat-icon>
+            <input 
+              matInput 
+              [type]="hidePassword ? 'password' : 'text'" 
+              formControlName="password" 
+              placeholder="Min 6 characters"
+              autocomplete="new-password">
+            <button 
+              mat-icon-button 
+              matSuffix 
+              (click)="hidePassword = !hidePassword" 
+              type="button"
+              class="visibility-btn">
+              <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+            </button>
+            <mat-hint align="start" *ngIf="registerForm.get('password')?.value" class="password-hint">
+              <div class="strength-indicator">
+                <div class="strength-bar" [style.width.%]="passwordStrength"></div>
+              </div>
+              <span class="strength-text" [class]="strengthClass">{{passwordStrengthText}}</span>
+            </mat-hint>
+          </mat-form-field>
+
+          <!-- Error Message -->
+          <div class="error-container" *ngIf="errorMessage">
+            <mat-icon class="error-icon">error</mat-icon>
+            <span>{{ errorMessage }}</span>
+          </div>
+        </mat-card-content>
+
+        <mat-card-actions>
+          <button 
+            mat-raised-button 
+            color="primary" 
+            class="full-width btn-cold-primary" 
+            [disabled]="registerForm.invalid || isLoading">
+            <mat-icon *ngIf="isLoading" class="spin-icon">refresh</mat-icon>
+            <span *ngIf="!isLoading">Create Account</span>
+          </button>
+        </mat-card-actions>
+
+        <!-- Divider -->
+        <div class="divider">
+          <span>or</span>
+        </div>
+
+        <!-- Login Link -->
+        <div class="login-prompt">
+          <span>Already a member?</span>
+          <a routerLink="/login" class="cold-link">Sign In</a>
+        </div>
+      </form>
+    </mat-card>
+  </div>
+</div>

@@ -1,0 +1,92 @@
+<div class="auth-page">
+  <div class="login-container glass-card animate-slide-up">
+    <!-- Logo/Brand Section -->
+    <div class="brand-section">
+      <div class="logo-icon">
+        <mat-icon>shopping_bag</mat-icon>
+      </div>
+      <h1 class="brand-title">Buy 01</h1>
+      <p class="brand-tagline">Your premium marketplace</p>
+    </div>
+
+    <mat-card class="login-card">
+      <mat-card-header>
+        <mat-card-title>Welcome Back</mat-card-title>
+        <mat-card-subtitle>Sign in to continue your journey</mat-card-subtitle>
+      </mat-card-header>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+        <mat-card-content>
+          <!-- Username Field -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Username or Email</mat-label>
+            <mat-icon matPrefix class="field-icon">person_outline</mat-icon>
+            <input 
+              matInput 
+              formControlName="username" 
+              placeholder="Enter your username or email"
+              autocomplete="username">
+            <mat-error *ngIf="loginForm.get('username')?.hasError('required')">
+              <mat-icon class="error-icon">error_outline</mat-icon>
+              Identifier is required
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Password Field -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Password</mat-label>
+            <mat-icon matPrefix class="field-icon">lock_outline</mat-icon>
+            <input 
+              matInput 
+              [type]="hidePassword ? 'password' : 'text'" 
+              formControlName="password"
+              autocomplete="current-password"
+              placeholder="Enter your password">
+            <button 
+              mat-icon-button 
+              matSuffix 
+              (click)="hidePassword = !hidePassword" 
+              type="button"
+              class="visibility-btn">
+              <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+            </button>
+            <mat-error *ngIf="loginForm.get('password')?.hasError('required')">
+              <mat-icon class="error-icon">error_outline</mat-icon>
+              Password is required
+            </mat-error>
+          </mat-form-field>
+
+
+
+          <!-- Error Message -->
+          <div class="error-container" *ngIf="errorMessage">
+            <mat-icon class="error-icon">error</mat-icon>
+            <span>{{ errorMessage }}</span>
+          </div>
+        </mat-card-content>
+
+        <mat-card-actions>
+          <button 
+            mat-raised-button 
+            color="primary" 
+            class="full-width btn-cold-primary" 
+            [disabled]="loginForm.invalid || isLoading">
+            <mat-icon *ngIf="isLoading" class="spin-icon">refresh</mat-icon>
+            <span *ngIf="!isLoading">Sign In</span>
+          </button>
+        </mat-card-actions>
+
+        <!-- Divider -->
+        <div class="divider">
+          <span>or</span>
+        </div>
+
+        <!-- Sign Up Link -->
+        <div class="signup-prompt">
+          <span>Don't have an account?</span>
+          <a routerLink="/register" class="cold-link">Create account</a>
+        </div>
+      </form>
+    </mat-card>
+  </div>
+</div>

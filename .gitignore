@@ -1,0 +1,89 @@
+# ==========================================
+# Operating System Files
+# ==========================================
+.DS_Store
+Thumbs.db
+
+# ==========================================
+# IDEs and Editors
+# ==========================================
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+.settings/
+.classpath
+.project
+
+# ==========================================
+# Secrets & Environment Variables
+# ==========================================
+.env
+.env.*
+*.local
+credentials.json
+
+# ==========================================
+# Angular / Node.js (Frontend)
+# ==========================================
+# Dependency directories
+node_modules/
+
+# Angular build output
+dist/
+tmp/
+out-tsc/
+bazel-out/
+.angular/
+
+# Node debug logs
+npm-debug.log
+yarn-error.log
+yarn-debug.log
+pnpm-debug.log
+
+# Coverage reports
+coverage/
+
+# ==========================================
+# Spring Boot / Maven (Backend)
+# ==========================================
+# Maven build output
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Compiled class files
+*.class
+
+# Log file output
+*.log
+
+# Packaged archives
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Hot reloading / Devtools
+.spring-boot-devtools.properties
+
+# ==========================================
+# Media Uploads (Local Object Storage)
+# ==========================================
+# Assuming you create a local folder to mock cloud storage for media
+uploads/
+logs/
+.log
+

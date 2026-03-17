@@ -1,0 +1,60 @@
+<mat-toolbar class="navbar">
+  <div class="navbar-brand" routerLink="/">
+    <div class="brand-icon">
+      <mat-icon>shopping_bag</mat-icon>
+    </div>
+    <span class="brand-text">Buy 01</span>
+  </div>
+
+  <span class="spacer"></span>
+
+  <!-- Logged In State -->
+  <div *ngIf="isLoggedIn" class="user-section">
+    <!-- Seller Actions -->
+    <ng-container *ngIf="role === 'SELLER'">
+      <button mat-button routerLink="/seller-dashboard" class="nav-btn">
+        <mat-icon>dashboard</mat-icon>
+        <span class="btn-text">Dashboard</span>
+      </button>
+      <button mat-button routerLink="/add-product" class="nav-btn primary">
+        <mat-icon>add_circle</mat-icon>
+        <span class="btn-text">Add Product</span>
+      </button>
+    </ng-container>
+
+    <!-- User Info -->
+    <div class="user-info">
+      <span class="role-badge" [ngClass]="role?.toLowerCase()">{{ role }}</span>
+      <span class="username">Hi, {{ username }}</span>
+    </div>
+
+    <!-- Profile Menu -->
+    <button mat-icon-button [matMenuTriggerFor]="menu" class="avatar-btn">
+      <div class="avatar">
+        {{ username?.charAt(0)?.toUpperCase() || 'U' }}
+      </div>
+    </button>
+    
+    <mat-menu #menu="matMenu" class="profile-menu" xPosition="before">
+      <div class="menu-header" *ngIf="username">
+        <span class="menu-username">{{ username }}</span>
+        <span class="menu-role">{{ role }}</span>
+      </div>
+      <mat-divider></mat-divider>
+      <button mat-menu-item routerLink="/profile">
+        <mat-icon>person_outline</mat-icon>
+        <span>Profile</span>
+      </button>
+      <button mat-menu-item (click)="logout()">
+        <mat-icon class="logout-icon">logout</mat-icon>
+        <span>Logout</span>
+      </button>
+    </mat-menu>
+  </div>
+
+  <!-- Logged Out State -->
+  <div *ngIf="!isLoggedIn" class="auth-section">
+    <button mat-button routerLink="/login" class="login-btn">Sign In</button>
+    <button mat-raised-button routerLink="/register" class="register-btn">Get Started</button>
+  </div>
+</mat-toolbar>

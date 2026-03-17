@@ -1,0 +1,112 @@
+<div class="home-container">
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <h1 class="hero-title">Discover Premium Products</h1>
+      <p class="hero-subtitle">Curated selection from trusted sellers</p>
+    </div>
+    <div class="hero-decoration"></div>
+  </section>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner-container">
+      <mat-spinner diameter="50" color="primary"></mat-spinner>
+    </div>
+    <p>Loading catalog...</p>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!isLoading" class="main-content">
+    <!-- Filter Bar -->
+    <div class="filter-wrapper">
+      <div class="filter-container">
+        <button 
+          [class.active]="selectedCategory === 'All'" 
+          (click)="filterByCategory('All')"
+          class="filter-btn">
+          <mat-icon>apps</mat-icon>
+          All
+        </button>
+        <button 
+          *ngFor="let cat of categories" 
+          [class.active]="selectedCategory === cat.name"
+          (click)="filterByCategory(cat.name)"
+          class="filter-btn">
+          {{ cat.name }}
+        </button>
+      </div>
+      <div class="results-count">
+        {{ filteredProducts.length }} product{{ filteredProducts.length !== 1 ? 's' : '' }}
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="filteredProducts.length === 0" class="empty-state">
+      <div class="empty-icon">
+        <mat-icon>search_off</mat-icon>
+      </div>
+      <h3>No products found</h3>
+      <p>Try selecting a different category</p>
+      <button mat-stroked-button color="primary" (click)="filterByCategory('All')">
+        View All Products
+      </button>
+    </div>
+
+    <!-- Product Grid -->
+    <div class="product-grid" *ngIf="filteredProducts.length > 0">
+      <mat-card 
+        class="product-card" 
+        *ngFor="let product of filteredProducts"
+        [routerLink]="['/products', product.id]">
+        
+        <!-- Image Container -->
+        <div class="product-image-wrapper">
+          <img 
+            mat-card-image 
+            [src]="product.mediaIds[0] || '/images/product.jpeg'" 
+            [alt]="product.name"
+            class="product-image"
+            (error)="onImageError($event)">
+          
+          <!-- Stock Badge -->
+          <div class="stock-badge" [class.out-of-stock]="product.stockQuantity === 0">
+            {{ product.stockQuantity > 0 ? (product.stockQuantity < 5 ? 'Low Stock' : 'In Stock') : 'Out of Stock' }}
+          </div>
+
+          <!-- Quick Action Overlay -->
+          <div class="product-overlay">
+            <button mat-fab color="primary" class="quick-view-btn" (click)="$event.stopPropagation()">
+              <mat-icon>visibility</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <mat-card-content class="product-content">
+          <div class="product-header">
+            <h3 class="product-name">{{ product.name }}</h3>
+            <p class="product-price">{{ product.price | currency }}</p>
+          </div>
+          
+          <p class="product-description" *ngIf="product.description">
+            {{ product.description | slice:0:80 }}{{ product.description.length > 80 ? '...' : '' }}
+          </p>
+
+          <div class="product-meta">
+            <span class="category-tag" *ngIf="product.category">{{ product.category }}</span>
+          </div>
+        </mat-card-content>
+
+        <mat-card-actions class="product-actions">
+          <button 
+            mat-flat-button 
+            color="primary" 
+            class="view-btn"
+            [disabled]="product.stockQuantity === 0">
+            {{ product.stockQuantity > 0 ? 'View Details' : 'Unavailable' }}
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+  </div>
+</div>
