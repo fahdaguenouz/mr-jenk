@@ -48,17 +48,27 @@ spring:
         # ==========================================
         # 2. BROAD WILDCARD ROUTES (ACTUAL API)
         # ==========================================
+        - id: auth-public
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/auth/**
+
         - id: user-service
           uri: lb://USER-SERVICE
           predicates:
-            - Path=/auth/**,/users/**
+            - Path=/users/**
           filters:
             - AuthenticationFilter
+
+        - id: public-categories
+          uri: lb://PRODUCT-SERVICE
+          predicates:
+            - Path=/categories/**
 
         - id: product-service
           uri: lb://PRODUCT-SERVICE
           predicates:
-            - Path=/products/**,/categories/**
+            - Path=/products/**
           filters:
             - AuthenticationFilter
 
