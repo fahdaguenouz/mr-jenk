@@ -3,8 +3,8 @@ pipeline {
 
     // Calls the tools configured in the Jenkins Dashboard
     tools {
-        jdk 'JDK-17' 
-        nodejs 'NodeJS-18' 
+        jdk 'JDK-21' 
+        nodejs 'NodeJS-22' 
     }
 
     stages {
