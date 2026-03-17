@@ -55,6 +55,36 @@ pipeline {
                 }
             }
         }
+        stage('Deploy to Production') {
+            steps {
+                script {
+                    echo '🚀 Starting Deployment via Docker Compose...'
+                    try {
+                        // 1. Build and spin up the new containers
+                        sh 'docker-compose up --build -d'
+                        
+                        // 2. Give Spring Boot a few seconds to start up
+                        echo '⏳ Waiting for services to initialize...'
+                        sleep(time: 20, unit: 'SECONDS')
+                        
+                        // 3. Health Check: Ensure the critical containers are actually running
+                        // If they crashed, this command fails and triggers the Rollback
+                        sh 'docker ps | grep buy01-frontend'
+                        sh 'docker ps | grep buy01-api-gateway'
+                        
+                        echo '✅ Deployment Successful and Healthy!'
+                    } catch (Exception e) {
+                        echo '🚨 HEALTH CHECK FAILED! INITIATING ROLLBACK...'
+                        
+                        // 4. Rollback Strategy: Destroy the broken deployment
+                        // (In a massive enterprise, you would revert to the previous Docker image tag here)
+                        sh 'docker-compose down'
+                        
+                        error('Deployment failed and was successfully rolled back.')
+                    }
+                }
+            }
+        }
     }
 
     post {
