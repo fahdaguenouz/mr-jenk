@@ -51,3 +51,10 @@ sudo systemctl status jenkins
 //// to get the password 
 
 sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+
+
+
+/// giving jenkins permissions
+ sudo usermod -aG docker jenkins
+
+ sudo systemctl restart jenkins
