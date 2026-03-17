@@ -39,3 +39,15 @@ frontend/src/app/
 │
 ├── app-routing.module.ts   # Main route definitions
 └── app.component.ts        # Root component
+
+
+
+//// to start the jenkins
+
+sudo systemctl start jenkins
+sudo systemctl enable jenkins
+sudo systemctl status jenkins
+
+//// to get the password 
+
+sudo cat /var/lib/jenkins/secrets/initialAdminPassword

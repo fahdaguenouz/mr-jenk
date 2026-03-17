@@ -1,7 +1,7 @@
 pipeline {
     agent any
 
-    // This calls the tools you just named in the Jenkins Dashboard
+    // Calls the tools configured in the Jenkins Dashboard
     tools {
         jdk 'JDK-17' 
         nodejs 'NodeJS-18' 
@@ -19,22 +19,26 @@ pipeline {
         stage('Backend: Build & Test Microservices') {
             steps {
                 script {
-                    // Your exact list of microservices
+                    // Your exact list of 01buy microservices
                     def services = ["discovery-server", "api-gateway", "user-service", "product-service", "media-service"]
                     
-                    for (service in services) {
+                    for (String service : services) {
                         echo "⚙️ Processing backend/${service}..."
                         
-                        // dir() tells Jenkins to 'cd' into this folder
                         dir("backend/${service}") {
-                            // 1. Ensure the wrapper has execution permissions
+                            // Ensure the wrapper has execution permissions
                             sh 'chmod +x mvnw'
                             
-                            // 2. clean package compiles the code AND runs the JUnit tests automatically. 
-                            // If a test fails here, Jenkins will instantly halt the pipeline.
+                            // clean package compiles the code AND runs the JUnit tests automatically.
                             sh './mvnw clean package'
                         }
                     }
+                }
+            }
+            post {
+                always {
+                    // Grabs the test results from all microservices, even if the build fails
+                    junit allowEmptyResults: true, testResults: 'backend/*/target/surefire-reports/*.xml'
                 }
             }
         }
@@ -46,7 +50,8 @@ pipeline {
                     sh 'npm install'
                     sh 'npm run build'
                     
-                    // Note: You can add 'ng test --watch=false' here later for frontend testing
+                    // Note: Uncomment the line below when you are ready to run Angular tests
+                    // sh 'ng test --watch=false --browsers=ChromeHeadless' 
                 }
             }
         }
@@ -57,7 +62,7 @@ pipeline {
             echo '🎉 SUCCESS: All microservices and frontend built and tested perfectly!'
         }
         failure {
-            echo '❌ FAILURE: A build or test failed. Check the Jenkins console output.'
+            echo '❌ FAILURE: A build or test failed. Check the Jenkins console output and test reports.'
         }
     }
 }
