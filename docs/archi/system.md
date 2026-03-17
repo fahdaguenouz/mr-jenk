@@ -12,7 +12,7 @@ graph TD
     Client("💻 Angular Frontend<br>(Port 4200)"):::client
 
     subgraph "Infrastructure Layer"
-        Gateway("🚪 API Gateway<br>Spring Cloud Gateway<br>(Port 8080)<br>JWT Validation & Routing"):::gateway
+        Gateway("🚪 API Gateway<br>Spring Cloud Gateway<br>(Port 9090)<br>JWT Validation & Routing"):::gateway
         Eureka("📍 Eureka Server<br>Service Discovery<br>(Port 8761)"):::registry
         Kafka("📨 Kafka Broker<br>Async Events<br>(Port 9092)"):::broker
     end

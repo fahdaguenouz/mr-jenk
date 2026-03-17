@@ -23,7 +23,7 @@ graph TD
     Client("💻 Angular Frontend<br>(Port 4200)"):::client
 
     subgraph Infra [Infrastructure Layer]
-        Gateway("🚪 API Gateway<br>(Port 8080)<br>JWT Validation & Routing"):::gateway
+        Gateway("🚪 API Gateway<br>(Port 9090)<br>JWT Validation & Routing"):::gateway
         Eureka("📍 Eureka Server<br>(Port 8761)<br>Service Discovery"):::registry
         Kafka("📨 Kafka Broker<br>(Port 9092)<br>Async Events"):::broker
     end
@@ -80,7 +80,7 @@ graph TD
 ## 📦 Microservices Breakdown
 
 1. **Discovery Server (`8761`):** The Netflix Eureka service registry. All other services register here so the Gateway can dynamically route traffic without hardcoded IP addresses.
-2. **API Gateway (`8080`):** The single entry point for the frontend. Handles CORS, blocks unauthorized requests by verifying JWT signatures, and acts as a reverse proxy for the centralized Swagger documentation hub.
+2. **API Gateway (`9090`):** The single entry point for the frontend. Handles CORS, blocks unauthorized requests by verifying JWT signatures, and acts as a reverse proxy for the centralized Swagger documentation hub.
 3. **User Service (`8081`):** Manages user registration, login, profile management, and JWT generation. Also serves as the UI host for the centralized Swagger Hub.
 4. **Product Service (`8088`):** Handles all e-commerce product listings (CRUD). Checks ownership permissions and triggers Kafka events upon product deletion.
 5. **Media Service (`8083`):** A decoupled file-storage engine. Handles uploading, deep-sniffing file types, and serving images. It lacks a `DELETE` API endpoint by design, relying entirely on Kafka events to securely clean up orphaned files.
@@ -123,7 +123,7 @@ chmod +x start.sh
 We use a Centralized Swagger Hub. You do not need to visit each microservice individually to view its documentation.
 
 Once all services are running, navigate to:
-👉 **http://localhost:8080/swagger-ui.html**
+👉 **http://localhost:9090/swagger-ui.html**
 
 Use the **"Select a definition"** dropdown in the top right corner to instantly switch between the API docs for the User, Product, and Media services.
 

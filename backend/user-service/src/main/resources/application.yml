@@ -37,8 +37,8 @@ springdoc:
     urls-primary-name: "User Service" 
     urls:
       - name: "User Service"
-        url: http://localhost:8080/users/v3/api-docs
+        url: http://localhost:9090/users/v3/api-docs
       - name: "Product Service"
-        url: http://localhost:8080/products/v3/api-docs
+        url: http://localhost:9090/products/v3/api-docs
       - name: "Media Service"
-        url: http://localhost:8080/api/media/v3/api-docs
+        url: http://localhost:9090/api/media/v3/api-docs

@@ -41,7 +41,7 @@ done
 echo ""
 echo "✅ All services are spinning up in the background."
 echo "📊 Eureka Dashboard: http://localhost:8761"
-echo "📖 Central Swagger UI: http://localhost:8080/swagger-ui.html"
+echo "📖 Central Swagger UI: http://localhost:9090/swagger-ui.html"
 echo ""
 echo "📄 You can monitor logs live in a separate terminal. Example:"
 echo "   tail -f logs/api-gateway.log"
