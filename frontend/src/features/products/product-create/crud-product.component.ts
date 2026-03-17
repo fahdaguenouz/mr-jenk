@@ -169,7 +169,7 @@ export class AddProductComponent implements OnInit {
     this.selectedPreviewImage = null;
   }
 
-  onSubmit(): void {
+ onSubmit(): void {
     this.isSubmitMode = false;
     this.formSubmitted = true;
 
@@ -185,21 +185,22 @@ export class AddProductComponent implements OnInit {
 
     this.isSubmitting = true;
 
-    // Upload new files first
+    // Upload new files first using the new BATCH method
     if (this.files.length > 0) {
-      this.uploadProgress = 0;
-      const uploadObservables = this.files.map(file => 
-        this.mediaService.uploadImage(file)
-      );
-
-      forkJoin(uploadObservables).subscribe({
+      this.mediaService.uploadMultipleImages(this.files).subscribe({
         next: (responses: any[]) => {
-          const newMediaIds = responses.map((res: any) => res.fileName || res.id);
-          const finalMediaIds = [...this.existingMedia, ...newMediaIds];
+          // Because we sent them all at once, the backend returns a clean, flat array:
+          // [ { fileName: "abc.jpg" }, { fileName: "xyz.jpg" } ]
+          const newMediaIds = responses.map((res: any) => res.fileName);
+          
+          // Filter out nulls and combine with existing media
+          const validMediaIds = newMediaIds.filter(id => id != null);
+          const finalMediaIds = [...this.existingMedia, ...validMediaIds];
+          
           this.saveProduct(finalMediaIds);
         },
         error: (err) => {
-          console.error(err);
+          console.error('Upload Error:', err);
           this.isSubmitting = false;
           this.toast.showError('Failed to upload images');
         }

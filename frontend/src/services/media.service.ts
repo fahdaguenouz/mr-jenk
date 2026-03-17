@@ -9,10 +9,16 @@ export class MediaService {
 
   uploadImage(file: File): Observable<any> {
     const formData = new FormData();
-    // The name 'file' matches your @RequestParam("file") perfectly
     formData.append('file', file); 
+    return this.http.post(`${environment.gatewayUrl}/api/media/upload`, formData);
+  }
 
-    // 🔥 FIX: Changed from /images to /upload
+  // 🔥 NEW BATCH UPLOAD METHOD
+  uploadMultipleImages(files: File[]): Observable<any> {
+    const formData = new FormData();
+    // Append every file to the exact same 'file' key, creating a list!
+    files.forEach(file => formData.append('file', file)); 
+    
     return this.http.post(`${environment.gatewayUrl}/api/media/upload`, formData);
   }
 }

@@ -72,6 +72,11 @@ spring:
           filters:
             - AuthenticationFilter
 
+        - id: public-media-images
+          uri: lb://MEDIA-SERVICE
+          predicates:
+            - Path=/api/media/images/**   
+
         - id: media-service
           uri: lb://MEDIA-SERVICE
           predicates:
