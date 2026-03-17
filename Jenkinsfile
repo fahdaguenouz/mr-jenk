@@ -46,12 +46,12 @@ pipeline {
         stage('Frontend: Build Angular') {
             steps {
                 dir('frontend') {
-                    echo '📦 Building Angular Frontend...'
-                    sh 'npm install'
-                    sh 'npm run build'
-                    
-                    // Note: Uncomment the line below when you are ready to run Angular tests
-                    // sh 'ng test --watch=false --browsers=ChromeHeadless' 
+                    // This explicitly forces the shell to use the 'NodeJS-22' tool
+                    nodejs(nodeJSInstallationName: 'NodeJS-22') {
+                        echo '📦 Building Angular Frontend...'
+                        sh 'npm install'
+                        sh 'npm run build'
+                    }
                 }
             }
         }
