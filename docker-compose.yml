@@ -71,6 +71,88 @@ services:
       - mongodb
     networks:
       - buy01-network
+  # ==========================================
+  # 01buy Infrastructure Services
+  # ==========================================
+  discovery-server:
+    build:
+      context: ./backend/discovery-server
+    container_name: buy01-discovery-server
+    ports:
+      - "8761:8761"
+    networks:
+      - buy01-network
+
+  api-gateway:
+    build:
+      context: ./backend/api-gateway
+    container_name: buy01-api-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - discovery-server
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+    networks:
+      - buy01-network
+
+  # ==========================================
+  # 01buy Core Microservices
+  # ==========================================
+  user-service:
+    build:
+      context: ./backend/user-service
+    container_name: buy01-user-service
+    depends_on:
+      - discovery-server
+      - mongodb
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - SPRING_DATA_MONGODB_URI=mongodb://admin:adminpassword@mongodb:27017/user_db?authSource=admin
+    networks:
+      - buy01-network
+
+  product-service:
+    build:
+      context: ./backend/product-service
+    container_name: buy01-product-service
+    depends_on:
+      - discovery-server
+      - mongodb
+      - kafka
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - SPRING_DATA_MONGODB_URI=mongodb://admin:adminpassword@mongodb:27017/product_db?authSource=admin
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+    networks:
+      - buy01-network
+
+  media-service:
+    build:
+      context: ./backend/media-service
+    container_name: buy01-media-service
+    depends_on:
+      - discovery-server
+      - mongodb
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - SPRING_DATA_MONGODB_URI=mongodb://admin:adminpassword@mongodb:27017/media_db?authSource=admin
+    networks:
+      - buy01-network
+
+  # ==========================================
+  # 01buy Frontend UI
+  # ==========================================
+  frontend:
+    build:
+      context: ./frontend
+    container_name: buy01-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - api-gateway
+    networks:
+      - buy01-network
 # Define persistent storage and networking
 volumes:
   mongo-data:
