@@ -93,9 +93,28 @@ pipeline {
     post {
         success {
             echo '🎉 SUCCESS: All microservices and frontend built and deployed perfectly!'
+            
+            // Securely grab the webhook URL from Jenkins Credentials
+            withCredentials([string(credentialsId: 'discord-webhook-url', variable: 'DISCORD_WEBHOOK')]) {
+                sh '''
+                    curl -H "Content-Type: application/json" \
+                    -X POST \
+                    -d '{"content": "✅ **SUCCESS:** 01buy Pipeline compiled, tested, and deployed to production seamlessly! 🎉"}' \
+                    $DISCORD_WEBHOOK
+                '''
+            }
         }
         failure {
             echo '❌ FAILURE: A build or deployment failed. Check the Jenkins console output.'
+            
+            withCredentials([string(credentialsId: 'discord-webhook-url', variable: 'DISCORD_WEBHOOK')]) {
+                sh '''
+                    curl -H "Content-Type: application/json" \
+                    -X POST \
+                    -d '{"content": "🚨 **FAILED:** 01buy Pipeline just crashed! Team, please check the Jenkins console logs immediately."}' \
+                    $DISCORD_WEBHOOK
+                '''
+            }
         }
     }
 }
