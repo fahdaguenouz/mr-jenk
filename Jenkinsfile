@@ -1,6 +1,9 @@
 pipeline {
     agent any
-
+    parameters {
+        choice(name: 'DEPLOY_ENV', choices: ['production', 'staging', 'development'], description: 'Select the target deployment environment')
+        booleanParam(name: 'CLEAR_CACHE', defaultValue: false, description: 'Check this to aggressively prune Docker cache before building')
+    }
     // Calls the tools configured in the Jenkins Dashboard
     tools {
         jdk 'JDK-21' 
