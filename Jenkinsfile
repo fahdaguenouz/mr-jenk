@@ -94,7 +94,7 @@ pipeline {
         success {
             echo '🎉 SUCCESS: All microservices and frontend built and deployed perfectly!'
             
-            // Securely grab the webhook URL from Jenkins Credentials
+            // Discord Notification
             withCredentials([string(credentialsId: 'discord-webhook-url', variable: 'DISCORD_WEBHOOK')]) {
                 sh '''
                     curl -H "Content-Type: application/json" \
@@ -103,10 +103,16 @@ pipeline {
                     $DISCORD_WEBHOOK
                 '''
             }
+
+            // Email Notification
+            mail to: 'YOUR_EMAIL@gmail.com',
+                 subject: "✅ SUCCESS: 01buy Build #${env.BUILD_NUMBER}",
+                 body: "Great news! The 01buy pipeline completed successfully.\n\nView the logs here: ${env.BUILD_URL}"
         }
         failure {
             echo '❌ FAILURE: A build or deployment failed. Check the Jenkins console output.'
             
+            // Discord Notification
             withCredentials([string(credentialsId: 'discord-webhook-url', variable: 'DISCORD_WEBHOOK')]) {
                 sh '''
                     curl -H "Content-Type: application/json" \
@@ -115,6 +121,11 @@ pipeline {
                     $DISCORD_WEBHOOK
                 '''
             }
+
+            // Email Notification
+            mail to: 'YOUR_EMAIL@gmail.com',
+                 subject: "🚨 FAILURE: 01buy Build #${env.BUILD_NUMBER}",
+                 body: "The 01buy pipeline failed during execution.\n\nPlease check the logs immediately: ${env.BUILD_URL}"
         }
     }
 }
