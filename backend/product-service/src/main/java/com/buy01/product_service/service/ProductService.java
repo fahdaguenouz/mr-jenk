@@ -4,6 +4,7 @@ import com.buy01.product_service.dto.ProductRequest;
 import com.buy01.product_service.dto.ProductResponse;
 import com.buy01.product_service.event.ProductEventProducer;
 import com.buy01.product_service.models.Product;
+import com.buy01.product_service.models.ProductMedia;
 import com.buy01.product_service.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,21 +23,7 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ProductEventProducer productEventProducer;
 
-    @Value("${media-service.base-url:http://localhost:9090/api/media/images/}")
-    private String mediaServiceBaseUrl;
-
     public ProductResponse createProduct(ProductRequest request, String sellerId) {
-
-        // 1. Sanitize the incoming media IDs so we ONLY store the filename
-       List<String> cleanMediaIds = new ArrayList<>();  // ADD THIS LINE
-    if (request.mediaIds() != null) {
-        for (String mediaUrl : request.mediaIds()) {
-            String filename = extractFilename(mediaUrl);
-            if (filename != null && !filename.trim().isEmpty()) {
-                cleanMediaIds.add(filename);
-            }
-        }
-    }
 
         Product product = Product.builder()
                 .name(request.name())
@@ -45,11 +32,13 @@ public class ProductService {
                 .stockQuantity(request.stockQuantity())
                 .category(request.category())
                 .sellerId(sellerId)
-                .mediaIds(cleanMediaIds.isEmpty() ? null : cleanMediaIds) // Save only "abc.jpg" or "xyz.png"
+                .media(request.media())
                 .build();
+        Product saved = productRepository.save(product);
 
-        Product savedProduct = productRepository.save(product);
-        return mapToResponse(savedProduct);
+        System.out.println(saved);
+
+        return mapToResponse(saved);
     }
 
     public List<ProductResponse> getAllProducts() {
@@ -82,63 +71,42 @@ public class ProductService {
             throw new SecurityException("You do not have permission to delete this product.");
         }
 
-        List<String> mediaIdsToDelete = product.getMediaIds();
+        List<ProductMedia> mediaToDelete = product.getMedia();
 
         productRepository.delete(product);
         log.info("Product {} successfully deleted from database.", productId);
 
-        if (mediaIdsToDelete != null && !mediaIdsToDelete.isEmpty()) {
-            for (String mediaId : mediaIdsToDelete) {
-                // Ensure we only send the filename to Kafka
-                productEventProducer.publishProductDeletedEvent(extractFilename(mediaId));
-            }
+        if (mediaToDelete != null) {
+
+            mediaToDelete.forEach(media -> productEventProducer.publishProductDeletedEvent(
+                    media.getPublicId()));
+
         }
     }
 
-    public void updateProduct(String productId, ProductRequest request, String sellerId) {
+    public void updateProduct(String productId,
+            ProductRequest request,
+            String sellerId) {
+
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found"));
 
-        if (!product.getSellerId().equals(sellerId))
+        if (!product.getSellerId().equals(sellerId)) {
             throw new SecurityException("Unauthorized");
+        }
 
-        // Update basic fields
         product.setName(request.name());
-        product.setPrice(request.price());
         product.setDescription(request.description());
+        product.setPrice(request.price());
         product.setStockQuantity(request.stockQuantity());
         product.setCategory(request.category());
 
-       
+        product.setMedia(request.media());
 
-       List<String> cleanMediaIds = new ArrayList<>();
-if (request.mediaIds() != null) {
-    for (String mediaUrl : request.mediaIds()) {
-        String filename = extractFilename(mediaUrl);
-        if (filename != null && !filename.trim().isEmpty()) {
-            cleanMediaIds.add(filename);
-        }
-    }
-}
-
-        product.setMediaIds(cleanMediaIds.isEmpty() ? null : cleanMediaIds);
         productRepository.save(product);
     }
 
     private ProductResponse mapToResponse(Product product) {
-       List<String> mediaUrls = new ArrayList<>();
-    if (product.getMediaIds() != null) {
-        for (String mediaId : product.getMediaIds()) {
-            if (mediaId != null) {  // Null-safe
-                if (mediaId.startsWith("http")) {
-                    mediaUrls.add(mediaId);
-                } else {
-                    mediaUrls.add(mediaServiceBaseUrl + mediaId);
-                }
-            }
-        }
-    }
-
         return ProductResponse.builder()
                 .id(product.getId())
                 .name(product.getName())
@@ -147,11 +115,10 @@ if (request.mediaIds() != null) {
                 .stockQuantity(product.getStockQuantity())
                 .category(product.getCategory())
                 .sellerId(product.getSellerId())
-                .mediaIds(mediaUrls)
+                .media(product.getMedia())
                 .createdAt(product.getCreatedAt())
                 .build();
     }
-    
 
     // Helper method to extract "abc.jpg" from
     // "http://localhost:8083/api/media/images/abc.jpg"

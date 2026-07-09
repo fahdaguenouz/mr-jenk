@@ -6,6 +6,7 @@ import { forkJoin, of } from 'rxjs';
 import { MediaService } from '../../../services/media.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
+import { ProductMedia } from '../../../models/media.model';
 
 @Component({
   standalone: false,
@@ -26,8 +27,8 @@ export class AddProductComponent implements OnInit {
   uploadProgress = 0;
   isSubmitMode = false;
   files: File[] = [];
-  previewUrls: string[] = []; 
-  existingMedia: string[] = [];
+  previewUrls: string[] = [];
+  existingMedia: ProductMedia[] = [];
   categories: any[] = [];
   selectedPreviewImage: string | null = null;
 
@@ -38,7 +39,7 @@ export class AddProductComponent implements OnInit {
     private mediaService: MediaService,
     private router: Router,
     private route: ActivatedRoute,
-    private dialog: MatDialog
+    private dialog: MatDialog,
   ) {}
 
   ngOnInit(): void {
@@ -60,7 +61,7 @@ export class AddProductComponent implements OnInit {
   loadCategories(): void {
     this.productService.getCategories().subscribe({
       next: (data) => (this.categories = data),
-      error: () => this.toast.showError('Failed to load categories')
+      error: () => this.toast.showError('Failed to load categories'),
     });
   }
 
@@ -71,13 +72,14 @@ export class AddProductComponent implements OnInit {
       this.productService.getProductById(this.productId).subscribe({
         next: (product) => {
           this.productForm.patchValue(product);
-          this.existingMedia = product.mediaIds || [];
-          this.previewUrls = [...this.existingMedia];
+          this.existingMedia = product.media || [];
+
+          this.previewUrls = this.existingMedia.map((media) => media.imageUrl);
         },
         error: () => {
           this.toast.showError('Failed to load product');
           this.router.navigate(['/seller-dashboard']);
-        }
+        },
       });
     }
   }
@@ -114,7 +116,7 @@ export class AddProductComponent implements OnInit {
   }
 
   handleFiles(newFiles: File[]): void {
-    const validFiles = newFiles.filter(file => {
+    const validFiles = newFiles.filter((file) => {
       // Validate file type
       if (!file.type.match(/image\/(jpeg|jpg|png)/)) {
         this.toast.showError(`${file.name} is not a valid image file`);
@@ -132,10 +134,12 @@ export class AddProductComponent implements OnInit {
     const filesToAdd = validFiles.slice(0, remainingSlots);
 
     if (validFiles.length > remainingSlots) {
-      this.toast.showWarning(`Only ${remainingSlots} more image${remainingSlots !== 1 ? 's' : ''} can be added`);
+      this.toast.showWarning(
+        `Only ${remainingSlots} more image${remainingSlots !== 1 ? 's' : ''} can be added`,
+      );
     }
 
-    filesToAdd.forEach(file => {
+    filesToAdd.forEach((file) => {
       this.files.push(file);
       const reader = new FileReader();
       reader.onload = () => {
@@ -160,7 +164,7 @@ export class AddProductComponent implements OnInit {
     this.selectedPreviewImage = url;
     this.dialog.open(this.imagePreviewDialog, {
       maxWidth: '90vw',
-      maxHeight: '90vh'
+      maxHeight: '90vh',
     });
   }
 
@@ -169,7 +173,7 @@ export class AddProductComponent implements OnInit {
     this.selectedPreviewImage = null;
   }
 
- onSubmit(): void {
+  onSubmit(): void {
     this.isSubmitMode = false;
     this.formSubmitted = true;
 
@@ -185,25 +189,24 @@ export class AddProductComponent implements OnInit {
 
     this.isSubmitting = true;
 
-    // Upload new files first using the new BATCH method
+    // Upload new files first
     if (this.files.length > 0) {
-      this.mediaService.uploadMultipleImages(this.files).subscribe({
+      this.uploadProgress = 0;
+      const uploadObservables = this.files.map((file) => this.mediaService.uploadImage(file));
+
+      forkJoin(uploadObservables).subscribe({
         next: (responses: any[]) => {
-          // Because we sent them all at once, the backend returns a clean, flat array:
-          // [ { fileName: "abc.jpg" }, { fileName: "xyz.jpg" } ]
-          const newMediaIds = responses.map((res: any) => res.fileName);
-          
-          // Filter out nulls and combine with existing media
-          const validMediaIds = newMediaIds.filter(id => id != null);
-          const finalMediaIds = [...this.existingMedia, ...validMediaIds];
-          
-          this.saveProduct(finalMediaIds);
+          console.log('UPLOAD RESPONSES:', responses);
+          const newMedia = responses.flatMap((res) => res);
+          console.log('MEDIA:', newMedia);
+          const finalMedia = [...this.existingMedia, ...newMedia];
+          this.saveProduct(finalMedia);
         },
         error: (err) => {
-          console.error('Upload Error:', err);
+          console.error(err);
           this.isSubmitting = false;
           this.toast.showError('Failed to upload images');
-        }
+        },
       });
     } else {
       // No new files, just save with existing
@@ -211,14 +214,14 @@ export class AddProductComponent implements OnInit {
     }
   }
 
-  saveProduct(mediaIds: string[]): void {
-    const payload = { 
-      ...this.productForm.value, 
-      mediaIds: mediaIds 
+  saveProduct(media: ProductMedia[]): void {
+    const payload = {
+      ...this.productForm.value,
+      media: media,
     };
 
-    const action$ = this.isEditMode 
-      ? this.productService.updateProduct(this.productId!, payload) 
+    const action$ = this.isEditMode
+      ? this.productService.updateProduct(this.productId!, payload)
       : this.productService.createProduct(payload);
 
     action$.subscribe({
@@ -230,7 +233,7 @@ export class AddProductComponent implements OnInit {
         console.error(err);
         this.isSubmitting = false;
         this.toast.showError(err.error?.message || 'Operation failed. Please try again.');
-      }
+      },
     });
   }
 }

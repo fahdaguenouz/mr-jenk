@@ -26,7 +26,7 @@ export class ProfileUpdateDialogComponent implements OnInit {
       firstName: [data.firstName || '', [Validators.maxLength(50)]],
       lastName: [data.lastName || '', [Validators.maxLength(50)]]
     });
-    this.avatarPreview = data.avatarMediaId || 'images/default-avatar.svg';
+    this.avatarPreview = data.avatarMediaId || 'assets/images/default-avatar.svg';
   }
 
   ngOnInit(): void {}

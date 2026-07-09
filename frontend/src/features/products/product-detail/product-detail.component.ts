@@ -8,7 +8,7 @@ import { User } from '../../../models/user.model';
   selector: 'app-product-detail',
   templateUrl: './product-detail.component.html',
   styleUrls: ['./product-detail.component.scss'],
-  standalone: false
+  standalone: false,
 })
 export class ProductDetailComponent implements OnInit {
   product: Product | null = null;
@@ -16,10 +16,9 @@ export class ProductDetailComponent implements OnInit {
   isLoading = true;
   seller: User | null = null;
   quantity = 1;
-
   constructor(
     private route: ActivatedRoute,
-    private productService: ProductService
+    private productService: ProductService,
   ) {}
 
   ngOnInit(): void {
@@ -27,19 +26,20 @@ export class ProductDetailComponent implements OnInit {
     if (id) {
       this.productService.getProductById(id).subscribe({
         next: (data) => {
+          console.log('Product data:', data);
           this.product = data;
           this.isLoading = false;
           this.fetchSellerInfo(data.sellerId);
         },
-        error: () => (this.isLoading = false)
+        error: () => (this.isLoading = false),
       });
     }
   }
 
   fetchSellerInfo(sellerId: string) {
     this.productService.getUserById(sellerId).subscribe({
-      next: (user) => this.seller = user,
-      error: () => console.error("Could not fetch seller info")
+      next: (user) => (this.seller = user),
+      error: () => console.error('Could not fetch seller info'),
     });
   }
 
@@ -48,15 +48,19 @@ export class ProductDetailComponent implements OnInit {
   }
 
   nextImage() {
-    if (this.product && this.product.mediaIds.length > 0) {
-      this.selectedImageIndex = (this.selectedImageIndex + 1) % this.product.mediaIds.length;
+    if (!this.product?.media?.length) {
+      return;
     }
-  }
 
+    this.selectedImageIndex = (this.selectedImageIndex + 1) % this.product.media.length;
+  }
   prevImage() {
-    if (this.product && this.product.mediaIds.length > 0) {
-      this.selectedImageIndex = (this.selectedImageIndex - 1 + this.product.mediaIds.length) % this.product.mediaIds.length;
+    if (!this.product?.media?.length) {
+      return;
     }
+
+    this.selectedImageIndex =
+      (this.selectedImageIndex - 1 + this.product.media.length) % this.product.media.length;
   }
 
   incrementQty() {

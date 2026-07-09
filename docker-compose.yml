@@ -10,8 +10,8 @@ services:
     ports:
       - "27017:27017"
     environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: adminpassword
+      MONGO_INITDB_ROOT_USERNAME: ${DB_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${DB_PASSWORD}
     volumes:
       - mongo-data:/data/db
     networks:
@@ -21,7 +21,7 @@ services:
   # Zookeeper - Required for Kafka
   # ==========================================
   zookeeper:
-    image: confluentinc/cp-zookeeper:7.3.0
+    image: confluentinc/cp-zookeeper:latest
     container_name: buy01-zookeeper
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
@@ -35,7 +35,7 @@ services:
   # Kafka - Event-Driven Message Broker
   # ==========================================
   kafka:
-    image: confluentinc/cp-kafka:7.3.0
+    image: confluentinc/cp-kafka:7.5.0
     container_name: buy01-kafka
     depends_on:
       - zookeeper
@@ -51,106 +51,98 @@ services:
     networks:
       - buy01-network
 
-# ==========================================
+  # ==========================================
   # Mongo Express (Optional UI for your DB)
-# ==========================================
+  # ==========================================
   mongo-express:
     image: mongo-express:1.0.2
     container_name: buy01-mongo-express
     restart: unless-stopped
     ports:
-      - "8085:8081" 
+      - "8085:8081"
     environment:
       # 1. Credentials for the Browser UI login pop-up
-      ME_CONFIG_BASICAUTH_USERNAME: admin
-      ME_CONFIG_BASICAUTH_PASSWORD: adminpassword
-      
+      ME_CONFIG_BASICAUTH_USERNAME: ${DB_USER_CONFIG}
+      ME_CONFIG_BASICAUTH_PASSWORD: ${DB_PASSWORD_CONFIG}
+
       # 2. The single connection string required by v1.0.2+
-      ME_CONFIG_MONGODB_URL: mongodb://admin:adminpassword@mongodb:27017/
+      ME_CONFIG_MONGODB_URL: mongodb://${DB_USER}:${DB_PASSWORD_URL_ENCODED}@mongodb:27017/?authSource=admin
     depends_on:
       - mongodb
     networks:
       - buy01-network
-  # ==========================================
-  # 01buy Infrastructure Services
-  # ==========================================
-  discovery-server:
-    build:
-      context: ./backend/discovery-server
-    container_name: buy01-discovery-server
+  product-service:
+    build: ./backend/product-service
+    container_name: buy01-product-service
+    restart: unless-stopped
+    ports:
+      - "8088:8088"
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://${DB_USER}:${DB_PASSWORD_URL_ENCODED}@mongodb:27017/product_db?authSource=admin
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
+      MEDIA_SERVICE_BASE_URL: http://media-service:8083/api/media/images/
+    depends_on:
+    - mongodb
+    - kafka
+    - discovery-service
+    networks:
+      - buy01-network
+  user-service:
+    build: ./backend/user-service
+    container_name: buy01-user-service
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://${DB_USER}:${DB_PASSWORD_URL_ENCODED}@mongodb:27017/user_db?authSource=admin
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
+      MEDIA_SERVICE_BASE_URL: http://media-service:8083/api/media/images/
+    depends_on:
+    - mongodb
+    - kafka
+    - discovery-service
+    networks:
+      - buy01-network
+  media-service:
+    build: ./backend/media-service
+    container_name: buy01-media-service
+    restart: unless-stopped
+    ports:
+      - "8083:8083"
+    environment:
+      # environment:
+      SPRING_DATA_MONGODB_URI: mongodb://${DB_USER}:${DB_PASSWORD_URL_ENCODED}@mongodb:27017/media_db?authSource=admin
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
+    depends_on:
+    - mongodb
+    - kafka
+    - discovery-service
+    networks:
+      - buy01-network
+  discovery-service:
+    build: ./backend/discovery-server
+    container_name: buy01-discovery-service
+    restart: unless-stopped
     ports:
       - "8761:8761"
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
     networks:
       - buy01-network
-
   api-gateway:
-    build:
-      context: ./backend/api-gateway
-    container_name: buy01-api-gateway
+    build: ./backend/api-gateway
+    container_name: buy01-api-gateway-service
+    restart: unless-stopped
     ports:
-      - "9090:9090"
-    depends_on:
-      - discovery-server
+      - "8080:8080"
     environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
-    networks:
-      - buy01-network
-
-  # ==========================================
-  # 01buy Core Microservices
-  # ==========================================
-  user-service:
-    build:
-      context: ./backend/user-service
-    container_name: buy01-user-service
-    depends_on:
-      - discovery-server
-      - mongodb
-    environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
-      - SPRING_DATA_MONGODB_URI=mongodb://admin:adminpassword@mongodb:27017/user_db?authSource=admin
-    networks:
-      - buy01-network
-
-  product-service:
-    build:
-      context: ./backend/product-service
-    container_name: buy01-product-service
-    depends_on:
-      - discovery-server
-      - mongodb
-      - kafka
-    environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
-      - SPRING_DATA_MONGODB_URI=mongodb://admin:adminpassword@mongodb:27017/product_db?authSource=admin
-      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
-    networks:
-      - buy01-network
-
-  media-service:
-    build:
-      context: ./backend/media-service
-    container_name: buy01-media-service
-    depends_on:
-      - discovery-server
-      - mongodb
-    environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
-      - SPRING_DATA_MONGODB_URI=mongodb://admin:adminpassword@mongodb:27017/media_db?authSource=admin
-    networks:
-      - buy01-network
-
-  # ==========================================
-  # 01buy Frontend UI
-  # ==========================================
-  frontend:
-    build:
-      context: ./frontend
-    container_name: buy01-frontend
-    ports:
-      - "4200:80"
-    depends_on:
-      - api-gateway
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
     networks:
       - buy01-network
 # Define persistent storage and networking
